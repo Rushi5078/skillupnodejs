@@ -5,7 +5,7 @@ var app=express()
 app.use(bodyParser())
 
 app.get("/",function(request,response){
-  response.send("hello from express js.... rushikesh")
+  response.send("hello from express js....")
 });
 
 
