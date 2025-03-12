@@ -2,8 +2,8 @@ pipeline {
     agent any
 
     environment {
-        IMAGE_NAME = 'skillupnodejs'    // Name of the Docker image
-        PORT = '9595'                   // Port where the app will run
+        IMAGE_NAME = 'skillupnodejs'
+        PORT = '9595'
     }
 
     stages {
@@ -25,13 +25,17 @@ pipeline {
             }
         }
 
-        stage('Stop Existing Containers') {
+        stage('Stop and Remove Existing Container') {
             steps {
                 script {
-                    // Stop and remove any running container with the same name
+                    // Stop and remove the existing container with the same name, if it's running
                     sh '''
-                    docker ps -q --filter "name=${IMAGE_NAME}" | xargs -I {} docker stop {}
-                    docker ps -a -q --filter "name=${IMAGE_NAME}" | xargs -I {} docker rm {}
+                    CONTAINER_ID=$(docker ps -q -f name=${IMAGE_NAME})
+                    if [ -n "$CONTAINER_ID" ]; then
+                        echo "Stopping and removing existing container ${IMAGE_NAME}..."
+                        docker stop ${IMAGE_NAME}
+                        docker rm ${IMAGE_NAME}
+                    fi
                     '''
                 }
             }
@@ -40,7 +44,7 @@ pipeline {
         stage('Run Docker Container') {
             steps {
                 script {
-                    // Run the Docker container using the built image
+                    // Run the new Docker container
                     sh 'docker run -d -p ${PORT}:${PORT} --name ${IMAGE_NAME} ${IMAGE_NAME}'
                 }
             }
