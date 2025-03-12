@@ -11,7 +11,7 @@ pipeline {
             steps {
                 script {
                     // Clone the repository from GitHub
-                    git 'https://github.com/yourusername/your-repository.git'
+                    git 'https://github.com/Rushi5078/skillupnodejs.git'
                 }
             }
         }
