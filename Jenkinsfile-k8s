@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        IMAGE_NAME = 'skillupnodejs'
+        IMAGE_NAME = 'rushikesh8788/skillupnodejs'
         IMAGE_TAG = "${env.BUILD_NUMBER}" // Use BUILD_NUMBER for unique image tagging
         PORT = '9595'
     }
