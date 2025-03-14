@@ -3,6 +3,7 @@ pipeline {
 
     environment {
         IMAGE_NAME = 'skillupnodejs'
+        IMAGE_TAG = "${env.BUILD_ID}"
         PORT = '9595'
     }
 
@@ -19,34 +20,30 @@ pipeline {
         stage('Build Docker Image') {
             steps {
                 script {
-                    sh 'docker build -t ${IMAGE_NAME} .'
+                    sh 'docker build -t ${DOCKER_IMAGE}:${IMAGE_TAG} .'
                 }
             }
         }
 
-        stage('Stop and Remove Existing Container') {
+       stage('Login to Docker Hub') {
             steps {
                 script {
-                    sh '''
-                    CONTAINER_ID=$(docker ps -q -f name=${IMAGE_NAME})
-                    if [ -n "$CONTAINER_ID" ]; then
-                        echo "Stopping and removing existing container ${IMAGE_NAME}..."
-                        docker stop $CONTAINER_ID
-                        docker rm $CONTAINER_ID
-                    fi
-                    '''
+                    // Login to Docker Hub using credentials stored in Jenkins
+                    withCredentials([usernamePassword(credentialsId: DOCKERHUB_CREDENTIALS, usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
+                        sh 'echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin'
+                    }
                 }
             }
         }
 
-        stage('Run Docker Container') {
+        stage('Push Docker Image') {
             steps {
                 script {
-                    sh 'docker run -d -p ${PORT}:${PORT} --name ${IMAGE_NAME} ${IMAGE_NAME}'
+                    // Push the Docker image to Docker Hub
+                    sh 'docker push ${DOCKER_IMAGE}:${IMAGE_TAG}'
                 }
             }
         }
-
         
     }
 
