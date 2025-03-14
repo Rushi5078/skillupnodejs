@@ -35,7 +35,22 @@ pipeline {
                 }
             }
         }
+stage('Deploy to Kubernetes') {
+            steps {
+                script {
+                     
+                        // Update the deployment.yaml with the new image tag
+                        sh "sed -i 's|rushikesh8788/skillupnodejs:.*|rushikesh8788/skillupnodejs:${env.IMAGE_TAG}|g' deployment.yaml"
 
+                        // Apply deployment to Kubernetes
+                        sh "kubectl apply -f deployment.yaml"
+                        
+                        // Verify rollout status
+                        sh "kubectl rollout status deployment/skillupnodejs"
+                    }
+                }
+            }
+        
        
     }
 
