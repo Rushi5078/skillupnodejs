@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: skillupnodejs
+  labels:
+    app: skillupnodejs
+spec:
+  replicas: 1  # Number of pods to run
+  selector:
+    matchLabels:
+      app: skillupnodejs
+  template:
+    metadata:
+      labels:
+        app: skillupnodejs
+    spec:
+      containers:
+      - name: skillupnodejs-container
+        image: rushikesh8788/skillupnodejs:8  # Replace with your Docker image
+        ports:
+        - containerPort: 9595  # Port exposed by your container
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: skillupnodejs-service
+spec:
+  selector:
+    app: skillupnodejs  # Selects pods with the label 'app: skillupnodejs'
+  ports:
+    - protocol: TCP
+      port: 80         # Port exposed on the service
+      targetPort: 9595  # Port on the container to which traffic is forwarded
+      nodePort: 30007   # Port exposed on the nodes (NodePort)
+  type: NodePort        # Exposes the service as a NodePort
