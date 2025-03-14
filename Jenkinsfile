@@ -10,8 +10,8 @@ pipeline {
         stage('Checkout Repository') {
             steps {
                 script {
-                    // Clone the repository from GitHub
-                    git 'https://github.com/Rushi5078/skillupnodejs.git'
+                    deleteDir() // Clean workspace
+                    git branch: 'master', url: 'https://github.com/Rushi5078/skillupnodejs.git'
                 }
             }
         }
@@ -19,7 +19,6 @@ pipeline {
         stage('Build Docker Image') {
             steps {
                 script {
-                    // Build the Docker image using the Dockerfile in the repo
                     sh 'docker build -t ${IMAGE_NAME} .'
                 }
             }
@@ -28,13 +27,12 @@ pipeline {
         stage('Stop and Remove Existing Container') {
             steps {
                 script {
-                    // Stop and remove the existing container with the same name, if it's running
                     sh '''
                     CONTAINER_ID=$(docker ps -q -f name=${IMAGE_NAME})
                     if [ -n "$CONTAINER_ID" ]; then
                         echo "Stopping and removing existing container ${IMAGE_NAME}..."
-                        docker stop ${IMAGE_NAME}
-                        docker rm ${IMAGE_NAME}
+                        docker stop $CONTAINER_ID
+                        docker rm $CONTAINER_ID
                     fi
                     '''
                 }
@@ -44,7 +42,6 @@ pipeline {
         stage('Run Docker Container') {
             steps {
                 script {
-                    // Run the new Docker container
                     sh 'docker run -d -p ${PORT}:${PORT} --name ${IMAGE_NAME} ${IMAGE_NAME}'
                 }
             }
@@ -53,9 +50,11 @@ pipeline {
         stage('Verify Application') {
             steps {
                 script {
-                    // Verify if the application is running by accessing the port
                     sh '''
-                    curl --silent --fail http://localhost:${PORT} || echo "Application failed to start"
+                    if ! curl --silent --fail http://localhost:${PORT}; then
+                        echo "Application failed to start"
+                        exit 1
+                    fi
                     '''
                 }
             }
