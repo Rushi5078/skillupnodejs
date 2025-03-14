@@ -3,7 +3,7 @@ pipeline {
 
     environment {
         IMAGE_NAME = 'skillupnodejs'
-        IMAGE_TAG = "${env.BUILD_ID}"
+        IMAGE_TAG = "${env.BUILD_NUMBER}" // Use BUILD_NUMBER for unique image tagging
         PORT = '9595'
     }
 
@@ -17,21 +17,19 @@ pipeline {
             }
         }
 
-       stage('Build Docker Image') {
-    steps {
-        script {
-            sh "docker build -t ${env.IMAGE_NAME}:${env.IMAGE_TAG} ."
-        }
-    }
-}
-
-
-       stage('Login to Docker Hub') {
+        stage('Build Docker Image') {
             steps {
                 script {
-                    // Login to Docker Hub using credentials stored in Jenkins
-                    withCredentials([usernamePassword(credentialsId: docker, usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
-                        sh 'echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin'
+                    sh "docker build -t ${env.IMAGE_NAME}:${env.IMAGE_TAG} ."
+                }
+            }
+        }
+
+        stage('Login to Docker Hub') {
+            steps {
+                script {
+                    withCredentials([usernamePassword(credentialsId: 'docker', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
+                        sh "echo \$DOCKER_PASSWORD | docker login -u \$DOCKER_USERNAME --password-stdin"
                     }
                 }
             }
@@ -40,12 +38,10 @@ pipeline {
         stage('Push Docker Image') {
             steps {
                 script {
-                    // Push the Docker image to Docker Hub
-                    sh 'docker push ${env.IMAGE_NAME}:${env.IMAGE_TAG}'
+                    sh "docker push ${env.IMAGE_NAME}:${env.IMAGE_TAG}"
                 }
             }
         }
-        
     }
 
     post {
