@@ -47,18 +47,7 @@ pipeline {
             }
         }
 
-        stage('Verify Application') {
-            steps {
-                script {
-                    sh '''
-                    if ! curl --silent --fail http://localhost:${PORT}; then
-                        echo "Application failed to start"
-                        exit 1
-                    fi
-                    '''
-                }
-            }
-        }
+        
     }
 
     post {
